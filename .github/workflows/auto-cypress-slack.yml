@@ -3,7 +3,7 @@ env:
   email: "AAAA"
 on:
   schedule:
-    # 每天 UTC 00:00 运行（北京时间 16:00）
+    # UTC time
     - cron: '20 15 * * *'     #${{ secrets.SCHEDULE }}
   push:
     branches: [ main ]
@@ -17,18 +17,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 使用 Node.js 环境
+      # uses:  Node.js env:
+        
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      # 关键修复：用 npm install 代替 npm ci，彻底解决 lockfile 报错
+      # uses: npm install to replace npm ci，fix lockfile
       - name: Install dependencies
         run: npm install
 
-      # 运行 Cypress 测试
+      # run:  Cypress test
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
@@ -37,17 +38,17 @@ jobs:
           CI: true
           CYPRESS_CASENAME: "cypress/e2e/**/*.cy.js" # ${{ inputs.casename }}
 
-      # ==================== 日志输出 + 统计 ====================
-      - name: 生成 Cypress 报告与日志
+      # ====================log output  ====================
+      - name: Generate Cypress report and log
         if: always()
         run: |
-          # 生成 JSON 报告（统计用）
+          # Generate JSON report
           npx cypress run --reporter json > cypress-report.json 2>&1 || true
-          # 输出日志到控制台
+          # log to console
           cat cypress-report.json
 
-      # ==================== 解析成功/失败/跳过 ====================
-      - name: 解析测试统计
+      # ==================== Success/failed/skiped ====================
+      - name: Success/failed/skiped 
         if: always()
         id: parse
         run: |
@@ -55,9 +56,9 @@ jobs:
           FAILED=$(jq -r '.stats.failed // 0' test-results.json 2>/dev/null || echo 0)
           SKIPPED=$(jq -r '.stats.skipped // 0' test-results.json 2>/dev/null || echo 0)
           TOTAL=$(jq -r '.stats.tests // 0' test-results.json 2>/dev/null || echo 0)
-          STATUS=$([ "$FAILED" -gt 0 ] && echo "失败" || echo "成功")
+          STATUS=$([ "$FAILED" -gt 0 ] && echo "failed" || echo "success")
 
-          # 写入环境变量
+          # write env var
          
           echo "STATUS=$STATUS" >> $GITHUB_ENV
           echo "PASSED=$PASSED" >> $GITHUB_ENV
@@ -66,10 +67,10 @@ jobs:
           echo "TOTAL=$TOTAL" >> $GITHUB_ENV
           echo $PASSED $FAILED $SKIPPED $TOTAL
  
-      - name: 获取当前用户的邮箱
+      - name: get current user email
         id: get-email
         run: |
-          # 获取触发者邮箱
+          # get trigger email
           email=$(gh api users/${{ github.actor }} --jq '.email')
           echo $email
           echo "email=$email" >> $GITHUB_ENV
@@ -77,32 +78,32 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # =============================================
-      # ✅ 修复：无论成功失败都发邮件
+      # ✅ fix send email
       # =============================================
-      - name: 发送测试结果邮件
-        if: always()  # 👈 关键在这里！
+      - name: send email
+        if: always()  
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.qq.com
           server_port: 465
           username: ${{ secrets.EMAIL_USER }}
           password: ${{ secrets.EMAIL_PASS }}
-          subject: 自动化 Cypress 测试结果 ${{ job.status }}
+          subject: Auto Cypress test result ${{ job.status }}
           body: |
-            测试完成！
-            运行用例：${{ inputs.casename }}
-            运行状态：${{ job.status }}
+            Finish！
+            case：${{ inputs.casename }}
+            status：${{ job.status }}
           to: ${{ secrets.EMAIL_TO }} # ${{ env.email }}
           from: GitHub Actions
-          # 重点：HTML格式 + 可点击链接
+          # HTMLformat 
           html_body: |
-            <h3>Cypress 自动化测试执行结果 ${{ job.status }}</h3>
-            <p>请点击下方链接查看详细日志：</p>
+            <h3>Cypress Auto result ${{ job.status }}</h3>
+            <p>click below to see details：</p>
             <p><a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">
-            查看 GitHub Actions 运行结果
+            See GitHub Actions run result
             </a></p>
       # ==============================================
-      # 自动发送测试结果到 Slack（成功/失败都会发）
+      # Send result to Slack
       # ==============================================
       - name: Send result to Slack
         if: always()
@@ -110,7 +111,7 @@ jobs:
         with:
           payload: |
             {
-              "text": "🧪 Cypress 自动化测试完成\n\n📦 项目：${{ github.repository }}\n👤 操作者：${{ github.actor }}\n✅ 状态：${{ job.status }}\n🔗 查看日志：${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "text": "🧪 Cypress Auto test result\n\n📦 project：${{ github.repository }}\n👤 opearator：${{ github.actor }}\n✅ 状态：${{ job.status }}\n🔗 see log：${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
