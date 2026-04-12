@@ -111,7 +111,7 @@ jobs:
         with:
           payload: |
             {
-              "text": "🧪 Cypress Auto test result\n\n📦 project：${{ github.repository }}\n👤 opearator：${{ github.actor }}\n✅ 状态：${{ job.status }}\n🔗 see log：${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "text": "🧪 Cypress Auto test result\n\n📦 project：${{ github.repository }}\n👤 opearator：${{ github.actor }}\n✅ Status：${{ job.status }}\n🔗 see log：${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
