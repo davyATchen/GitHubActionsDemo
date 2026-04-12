@@ -1,6 +1,6 @@
 name: Debug Cypress E2E + email+ Slack 
 env:
-  email: "AAAA"
+  email: ""
 on:
 
   push:
