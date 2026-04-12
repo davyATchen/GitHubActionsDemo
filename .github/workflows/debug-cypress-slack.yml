@@ -13,6 +13,10 @@ on:
         description: "Name of test cases"
         required: true
         default: "cypress/e2e/**/*.js"
+      EMAIL_TO:
+        description: "Email To"
+        required: true
+        default: "davy.chen@sap.com"
 jobs:
   cypress-test:
     runs-on: ubuntu-latest
@@ -108,7 +112,7 @@ jobs:
             Completed！
             Test Case：${{ inputs.casename }}
             Test Status：${{ job.status }}
-          to: ${{ env.email }}
+          to: ${{ inputs.EMAIL_TO }}
           from: GitHub Actions
           # HTML format
           html_body: |
