@@ -16,7 +16,7 @@ on:
       EMAIL_TO:
         description: "Email To"
         required: true
-        default: "dvxchen@users.noreply.github.com"
+        default: "dvxchen@qq.com"
 jobs:
   cypress-test:
     runs-on: ubuntu-latest
