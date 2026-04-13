@@ -1,0 +1,15 @@
+jobs:
+  get-email:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 获取公开邮箱
+        id: get_email
+        run: |
+          EMAIL=$(curl -sH "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/users/${{ github.actor }} | jq -r .email)
+          echo "email=$EMAIL" >> $GITHUB_OUTPUT
+        # 失败时用noreply邮箱兜底
+        continue-on-error: true
+      - name: 输出邮箱
+        run: echo ${{ steps.get_email.outputs.email || format('{0}+{1}@users.noreply.github.com', github.actor_id, github.actor) }}
