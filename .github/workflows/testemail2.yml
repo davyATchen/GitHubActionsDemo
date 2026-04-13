@@ -1,15 +1,18 @@
 jobs:
-  get-email:
+  get-operator-email:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: 获取公开邮箱
-        id: get_email
+      - name: Get operator email
         run: |
-          EMAIL=$(curl -sH "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/users/${{ github.actor }} | jq -r .email)
-          echo "email=$EMAIL" >> $GITHUB_OUTPUT
-        # 失败时用noreply邮箱兜底
-        continue-on-error: true
-      - name: 输出邮箱
-        run: echo ${{ steps.get_email.outputs.email || format('{0}+{1}@users.noreply.github.com', github.actor_id, github.actor) }}
+          # 手动触发的操作者
+          OPERATOR="${{ github.triggering_actor }}"
+          # 标准 GitHub 隐私邮箱（一定存在）
+          EMAIL="${OPERATOR}@users.noreply.github.com"
+          
+          echo "OPERATOR=$OPERATOR" >> $GITHUB_ENV
+          echo "OPERATOR_EMAIL=$EMAIL" >> $GITHUB_ENV
+
+      - name: Show result
+        run: |
+          echo "操作者: ${{ env.OPERATOR }}"
+          echo "邮箱: ${{ env.OPERATOR_EMAIL }}"
