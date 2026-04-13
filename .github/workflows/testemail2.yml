@@ -1,3 +1,13 @@
+# 👇 这行就是解决报错的关键！
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+name: Cypress CI 自动化测试
+
 jobs:
   get-operator-email:
     runs-on: ubuntu-latest
